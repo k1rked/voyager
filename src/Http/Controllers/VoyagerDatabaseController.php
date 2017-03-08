@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Database\Migrations;
 use TCG\Voyager\Database\DatabaseUpdater;
 use TCG\Voyager\Database\Schema\Column;
 use TCG\Voyager\Database\Schema\Identifier;
@@ -19,6 +20,7 @@ use TCG\Voyager\Models\Permission;
 
 class VoyagerDatabaseController extends Controller
 {
+
     public function index()
     {
         Voyager::canOrFail('browse_database');
@@ -71,10 +73,9 @@ class VoyagerDatabaseController extends Controller
 
                 Artisan::call('voyager:make:model', $params);
             } elseif (isset($request->create_migration) && $request->create_migration == 'on') {
-                Artisan::call('make:migration', [
-                    'name'    => 'create_'.$table->name.'_table',
-                    '--table' => $table->name,
-                ]);
+
+                $this->makeMigration($table, 'create');
+
             }
 
             return redirect()
@@ -207,6 +208,63 @@ class VoyagerDatabaseController extends Controller
         } catch (Exception $e) {
             return back()->with($this->alertException($e));
         }
+    }
+
+    private function makeMigration(Table $table, $action)
+    {
+        $allowedActions = ['create', 'add_to', 'remove_from'];
+
+        if(!in_array($action, $allowedActions)){
+
+            throw new Exception('Action must be one of: '.implode(", ", $allowedActions));
+
+        }
+
+        $migrationName = $action.'_'.$table->__get('name').'_table';
+
+        $command = 'make:migration:schema';
+
+        $arguments = [
+            'name' => $migrationName,
+            '--schema' => $this->getMigrationSchema($table),
+            '--model' => false
+        ];
+
+        Artisan::call($command, $arguments);
+    }
+
+    private function getMigrationSchema(Table $table)
+    {
+
+        $schema = "";
+
+        foreach($table->getColumns() as $column){
+
+            $schema.=
+                $column->getName().":".
+                $column->getType().
+                '('.$column->getLength().')';
+
+            if($column->getDefault())
+                $schema.=':default('.$column->getDefault().')';
+
+            if(!$column->getNotnull())
+                $schema.=':nullable';
+
+            if($column->getUnsigned())
+                $schema.=':unsigned';
+
+            if($column->getAutoincrement())
+                throw new Exception("haven't done autoincrement that yet");
+
+            $schema.=",";
+
+        }
+
+        $schema = rtrim($schema, ',');
+
+        return $schema;
+
     }
 
     /********** BREAD METHODS **********/

@@ -7,28 +7,23 @@
 
     <div class="panel-body">
         <div class="row">
-        @if($db->action == 'update')
-            <div class="col-md-12">
-        @else
+
             <div class="col-md-6">
-        @endif
                 <label for="name">Table Name</label><br>
                 <input v-model.trim="table.name" type="text" class="form-control" placeholder="Table Name" required pattern="{{ $db->identifierRegex }}">
             </div>
 
-        @if($db->action == 'create')
             <div class="col-md-3 col-sm-4 col-xs-6">
-                <label for="create_model">Create model for this table?</label><br>
+                <label for="create_model">{{studly_case($db->action)}} model for this table?</label><br>
                 <input type="checkbox" name="create_model" data-toggle="toggle"
                        data-on="Yes, Please" data-off="No Thanks">
             </div>
 
             <div class="col-md-3 col-sm-4 col-xs-6">
-                <label for="create_migration">Create migration for this table?</label><br>
+                <label for="create_migration">{{studly_case($db->action)}} migration for this table?</label><br>
                 <input type="checkbox" name="create_migration" data-toggle="toggle"
                        data-on="Yes, Please" data-off="No Thanks">
             </div>
-        @endif
         </div><!-- .panel-body .row -->
         
         <div v-if="compositeIndexes.length" v-once class="alert alert-danger">
@@ -46,7 +41,7 @@
                     <th>Name</th>
                     <th>Type</th>
                     <th>Length</th>
-                    <th>Not Null?</th>
+                    <th>Required?</th>
                     <th>Unsigned?</th>
                     <th>AI?</th>
                     <th>Index</th>

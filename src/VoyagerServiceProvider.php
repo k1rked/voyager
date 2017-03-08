@@ -23,6 +23,7 @@ class VoyagerServiceProvider extends ServiceProvider
     {
         $this->app->register(ImageServiceProvider::class);
         $this->app->register(WidgetServiceProvider::class);
+        $this->app->register(\Laracasts\Generators\GeneratorsServiceProvider::class);
 
         $loader = AliasLoader::getInstance();
         $loader->alias('Voyager', VoyagerFacade::class);

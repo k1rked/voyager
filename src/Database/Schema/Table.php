@@ -160,6 +160,27 @@ class Table extends DoctrineTable
         return $exportedForeignKeys;
     }
 
+    /**
+     * @return string
+     */
+    public function getMigrationSchema()
+    {
+        $columns = $this->exportColumnsToArray();
+
+        $schema = "";
+
+        foreach($columns as $column){
+
+            $schema.=
+                $column['name'].":".
+                $column['type'].":".
+                $column['options'];
+
+        }
+
+        return $schema;
+    }
+
     public function __get($property)
     {
         $getter = 'get'.ucfirst($property);
